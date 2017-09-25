@@ -1,0 +1,7 @@
+ - read CSV file, calculate "wahlkreis -> percentage"
+ - calculate good levels using natural break with 3 colors?
+   - plot distributions of percentages for each party
+ - map levels to colors ... colorbrewer?
+ - write out kreise.[link,fdp,cdu,spd].svg
+ - create btw-[linke, ...].svg
+ - convert svg to png, using imagemagick and conjoin all .pngs horizontally
