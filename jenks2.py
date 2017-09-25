@@ -260,16 +260,34 @@ def readCrawled( fname ):
             if len(row[0]) >= 1 and row[0][0] == '#':
                 continue
 
+            # This is to treat alternative name for Grüne in Mecklenburg-Vorpommern
+            if row[0] == 'GRÜNE/B 90':
+                row[0] = 'GRÜNE'
+            # This is to treat alternative name for DIE LINKE in Niedersachsen -.- Why is only there a dot!?
+            if row[0] == 'DIE LINKE.':
+                row[0] = 'DIE LINKE'
+
             # first in row is name
             if not row[0] in iCol:
                 iCol[ row[0] ] = len( iCol )
                 header += [ row[0] ]
 
             # now save absolute value
-            if row[1] == '-':
+            iZweit  = 1
+            iDirekt = 4
+            if row[ iDirekt ] == '-':
                 datum[ iCol[ row[0] ] ] = 0
             else:
-                datum[ iCol[ row[0] ] ] = int( row[1].replace('.','') )
+                #datum[ iCol[ row[0] ] ] = int( row[1].replace('.','') ) # Direktstimme
+                datum[ iCol[ row[0] ] ] = int( row[ iDirekt ].replace('.','') )  # Zweitstimme
+
+                if 'Gültige' in iCol and datum[ iCol['Gültige'] ] > 0 and iCol[ row[0] ] > iCol[ 'Gültige' ]:
+                    x = datum[ iCol[ row[0] ] ] / datum[ iCol['Gültige'] ]
+                    if x == 0:
+                        print( "Not a single votum for '" + row[0] + "' in WK " + str(iKreis+1) + "???" )
+                    if x > 0.35 and row[0] != 'CDU' and row[0] != 'CSU':
+                        print( "More than 35% (",x,") for '" + row[0] + "' in WK " + str(iKreis+1) + "???" )
+                        print( "    row:", row )
 
         data += [ datum ]
 
@@ -291,11 +309,53 @@ def readCrawled( fname ):
     return data, iCol, hasDirect, hasSecond
 
 
+def getPartyPercentages( party, data, iCol, hasDirect, hasSecond ):
+    # well, could use list instead of hardcoded 299 here, but oh well
+    nKreise = 299
+    res1 = np.zeros( nKreise )
+    res2 = np.zeros( nKreise )
+    for row in data:
+        iKreis = int( row[0] )-1
+        if iKreis > nKreise:
+            continue
+
+        if hasDirect[ party ]:
+            res1[ iKreis ] = int( row[ iCol[ party ] + 0 ] ) / \
+                             int( row[ iCol[ 'Gültige' ] + 0 ] )
+            if party == 'CDU':
+                res1[ iKreis ] += int( row[ iCol[ 'CSU' ] + 0 ] ) / \
+                                  int( row[ iCol[ 'Gültige' ] + 0 ] )
+
+        if hasSecond[ party ]:
+            res2[ iKreis ] = int( row[ iCol[ party ] + hasDirect[ party ] ] ) / \
+                             int( row[ iCol[ 'Gültige' ] + 1 ] )
+            if res2[ iKreis ] == 0 and not ( party == 'CDU' and iKreis in range(211,258) ):
+                print( "Not a single votum for '" + party + "' in WK " + str(iKreis+1) + "???" )
+            maxNonWeirdPercent = 35
+            if res2[ iKreis ] > maxNonWeirdPercent / 100 and party != 'CDU':
+                print( "More than " + str( maxNonWeirdPercent ) + "% for '" + party + "' in WK " + str(iKreis+1) + "???" )
+            if party == 'CDU':
+                res2[ iKreis ] += int( row[ iCol[ 'CSU' ] + hasDirect[ party ] ] ) / \
+                                  int( row[ iCol[ 'Gültige' ] + 1 ] )
+
+        #print( res1[ iKreis ], res2[ iKreis ] )
+        #print( row[ iCol['Gültige']+0 ], np.sum( np.array( [ int(x) for x in row[ iCol['Gültige']+0+2::2 ] ] ) ) )
+        #print( row[ iCol['Gültige']+1 ], np.sum( np.array( [ int(x) for x in row[ iCol['Gültige']+1+2::2 ] ] ) ) )
+
+    return res1, res2
 
 
 def main():
-        #data, iCol, hasDirect, hasSecond = readCSV( 'btwkr17_umrechnung_btw13.csv' )
-        data, iCol, hasDirect, hasSecond = readCrawled( './2017/' )
+        if True: # 2017
+            data2, iCol2, hasDirect2, hasSecond2 = readCSV( 'btwkr17_umrechnung_btw13.csv' )
+            year2 = 2013
+            data , iCol , hasDirect , hasSecond  = readCrawled( './2017/' )
+            year = 2017
+        else: # 2013
+            data2, iCol2, hasDirect2, hasSecond2 = readCrawled( './2017/' )
+            year2 = 2017
+            data , iCol , hasDirect , hasSecond  = readCSV( 'btwkr17_umrechnung_btw13.csv' )
+            year = 2013
 
         parties = [ 'CDU', 'SPD', 'FDP', 'DIE LINKE', 'GRÜNE', 'AfD' ]
         colors = {
@@ -316,44 +376,27 @@ def main():
                 print( "Warning, couldn't find '" + party + "' in data." )
                 continue
 
-            # well, could use list instead of hardcoded 299 here, but oh well
-            nKreise = 299
-            res1 = np.zeros( nKreise )
-            res2 = np.zeros( nKreise )
-            for row in data:
-                iKreis = int( row[0] )-1
-                if iKreis > nKreise:
-                    continue
-
-                if hasDirect[ party ]:
-                    res1[ iKreis ] = int( row[ iCol[ party ] + 0 ] ) / \
-                                     int( row[ iCol[ 'Gültige' ] + 0 ] )
-                    if party == 'CDU':
-                        res1[ iKreis ] += int( row[ iCol[ 'CSU' ] + 0 ] ) / \
-                                          int( row[ iCol[ 'Gültige' ] + 0 ] )
-
-                if hasSecond[ party ]:
-                    res2[ iKreis ] = int( row[ iCol[ party ] + hasDirect[ party ] ] ) / \
-                                     int( row[ iCol[ 'Gültige' ] + 1 ] )
-                    if party == 'CDU':
-                        res2[ iKreis ] += int( row[ iCol[ 'CSU' ] + hasDirect[ party ] ] ) / \
-                                          int( row[ iCol[ 'Gültige' ] + 1 ] )
-
-                #print( res1[ iKreis ], res2[ iKreis ] )
-                #print( row[ iCol['Gültige']+0 ], np.sum( np.array( [ int(x) for x in row[ iCol['Gültige']+0+2::2 ] ] ) ) )
-                #print( row[ iCol['Gültige']+1 ], np.sum( np.array( [ int(x) for x in row[ iCol['Gültige']+1+2::2 ] ] ) ) )
+            res1, res2 = getPartyPercentages( party, data, iCol, hasDirect, hasSecond )
+            res1b, res2b = getPartyPercentages( party, data2, iCol2, hasDirect2, hasSecond2 )
 
             print( party,"Results: Direktstimme:", 100*res1[33], "%, Zweitstimme:", 100*res2[33], "%" )
-
-            # find color levels and plot distribution of percentages
-            ax  = figParties      .add_subplot( 3, 2, 1+iParty, title = party, ylabel = "%", xlabel = "Wahlbezirk" )
-            ax.plot( 100 * res2 )
-            ax  = figPartiesSorted.add_subplot( 3, 2, 1+iParty, title = party, ylabel = "%", xlabel = "Platzierung" )
-            ax.plot( 100 * np.sort( res2 ) )
 
             levels = np.array( jenks2( np.sort( res2 ), 4 ) )
             print( party, "Levels:", levels )
             print( party, "Levels:", 100 * levels )
+
+            # find color levels and plot distribution of percentages
+            ax  = figParties      .add_subplot( 3, 2, 1+iParty, title = party, ylabel = "%", xlabel = "Wahlbezirk" )
+            ax.plot( 100 * res2, label = str( year ), color = 'blue', linewidth = 2 )
+            ax.plot( 100 * res2b, label = str( year2 ), color = 'green', alpha = 0.5 )
+            for level in levels:
+                ax.axhline( 100 * level, color = '0.5', linestyle = '--' )
+
+            ax  = figPartiesSorted.add_subplot( 3, 2, 1+iParty, title = party, ylabel = "%", xlabel = "Platzierung" )
+            ax.plot( 100 * np.sort( res2 ), label = str( year ), color = 'blue', linewidth = 2 )
+            ax.plot( 100 * np.sort( res2b ), label = str( year2 ), color = 'green', alpha = 0.5 )
+            for level in levels:
+                ax.axhline( 100 * level , color = '0.5', linestyle = '--' )
 
             # Write out css file:
             with open( "kreise." + party + ".svg", 'w' ) as cssFile:
@@ -361,6 +404,16 @@ def main():
                     iLevel = np.searchsorted( levels, res2[ iKreis ] ) - 1
                     #print( res2[iKreis], iLevel )
                     cssFile.write( ".kreis" + str( iKreis+1 ) + " { fill: #" + colors[ party ][iLevel] + "; }" )
+
+            # Log the two first and two last places
+            iBest = np.argsort( res2 ) # highest first
+            print( "=====",party,"=====" )
+            print( "    1.   Platz:", iBest[-1]+1, 'with', str( 100 * res2[ iBest[-1] ] ) + "%" )
+            print( "    2.   Platz:", iBest[-2]+1, 'with', str( 100 * res2[ iBest[-2] ] ) + "%" )
+            print( "    n-1. Platz:", iBest[ 1]+1, 'with', str( 100 * res2[ iBest[ 1] ] ) + "%" )
+            print( "    n.   Platz:", iBest[ 0]+1, 'with', str( 100 * res2[ iBest[ 0] ] ) + "%" )
+
+        # for party in parties end
 
         finishPlot( figParties, fname = "parties" )
         finishPlot( figPartiesSorted, fname = "parties-distributions" )
