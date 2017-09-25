@@ -2,6 +2,12 @@
 
 Ein Skript, was die Karte von [Wikipedia](https://de.wikipedia.org/wiki/Datei:Bundestagswahlkreise_2017.svg) gemäß der erreichten Prozente für die Zweitstimme unter zuhilfename des natural-break-Algorithmus einfärbt. Hiermit sind regionale Präferenzen für bestimmte Parteien visualisierbar. CSU wird als CDU gewertet. Die Daten sind vom [Bundesamt für Statistik](https://www.bundeswahlleiter.de/bundestagswahlen/2017/wahlkreiseinteilung/umgerechnete-ergebnisse.html).
 
+Oben 2017, unten 2013. Von links nach Rechts: AfD, CDU, Die Linken, FDP, Grüne, SPD (alphabetisch).
+
+![Übersicht 2013](/Results/2013/btw-small.png)
+![Übersicht 2017](/Results/2017/btw-small.png)
+
+
 # 2017
 
 Ich übernehme keine Verantwortung für Korrektheit der Daten. Es ist nicht sonderlich getestet worden und damit höchstwahrscheinlich zumidnest teilweise fehlerhaft
