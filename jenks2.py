@@ -162,11 +162,13 @@ def test():
     plt.show()
 
 import csv
-def main():
+
+def readCSV( fname ):
+
     # https://docs.python.org/2.4/lib/standard-encodings.html
     # https://www.bundeswahlleiter.de/bundestagswahlen/2017/wahlkreiseinteilung/umgerechnete-ergebnisse.html
     #  -> https://www.bundeswahlleiter.de/dam/jcr/36efa904-5d4a-4159-a11e-2c8ecc1b0f77/btwkr17_umrechnung_btw13.csv
-    with open( 'btwkr17_umrechnung_btw13.csv', newline='', encoding='ISO8859-15' ) as csvfile:
+    with open( fname, newline='', encoding='ISO8859-15' ) as csvfile:
         spamreader = csv.reader( csvfile, delimiter=';' )
         # Wkr-Nr.;Land;Wahlkreisname;Wahlberechtigte;Wähler;Ungültige;Ungültige;Gültige;Gültige;CDU;CDU;SPD;SPD;FDP;FDP;DIE LINKE;DIE LINKE;GRÜNE;GRÜNE;CSU;CSU;PIRATEN;PIRATEN;NPD;NPD;Tierschutzpartei;Tierschutzpartei;REP;REP;ÖDP;ÖDP;FAMILIE;FAMILIE;Bündnis 21/RRP;Bündnis 21/RRP;RENTNER;RENTNER;BP;BP;PBC;PBC;BüSo;BüSo;DIE VIOLETTEN;DIE VIOLETTEN;MLPD;MLPD;Volksabstimmung;Volksabstimmung;PSG;AfD;AfD;BIG;BIG;pro Deutschland;pro Deutschland;DIE RECHTE;DIE FRAUEN;FREIE WÖHLER;FREIE WÖHLER;Nichtwähler;PARTEI DER VERNUNFT;PARTEI DER VERNUNFT;Die PARTEI;Die PARTEI;Bergpartei;BGD;DKP;NEIN!;WGr/EB
         # ;;;;;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Zweitstimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Zweitstimmen;Erststimmen;Erststimmen;Erststimmen;Erststimmen;Erststimmen
@@ -205,6 +207,95 @@ def main():
                 iCol[ header[i] ] = i
                 #print( i,"->",header[i] )
 
+        return data, iCol, hasDirect, hasSecond
+
+
+def readCrawled( fname ):
+    # # Tabelle Erststimmen und Zweitstimmen <small>Zwischenergebnis: 25.09.2017 00:52:30 Uhr, 1 von 1 Wahlkreisen ausgezählt</small>
+    # # # Gegenstand der Nachweisung</th># Erststimmen</th># Zweitstimmen
+    # # Anzahl</th># %</th># Diff. zu 2013<br>in %-Pkt.</th># Anzahl</th># %</th># Diff. zu 2013<br>in %-Pkt.
+    #
+    # Wahlberechtigte;225.659;-;-;-;-;-
+    # Wähler;171.905;76,2;4,5;-;-;-
+    # Ungültige;1.647;1,0;-0,4;1.509;0,9;-0,4
+    # Gültige;170.258;99,0;0,4;170.396;99,1;0,4
+    #
+    # CDU;68.102;40,0;-2,5;58.307;34,2;-4,0
+    # SPD;47.697;28,0;-9,2;40.376;23,7;-8,9
+    # GRÜNE;17.899;10,5;2,7;22.290;13,1;3,3
+    # FDP;11.143;6,5;4,7;18.948;11,1;6,1
+    # DIE LINKE;12.138;7,1;2,5;13.995;8,2;2,6
+    # AfD;10.581;6,2;3,0;11.647;6,8;2,7
+    # NPD;-;-;-0,6;354;0,2;-0,4
+    # FREIE WÄHLER;1.943;1,1;-;1.189;0,7;0,0
+    # MLPD;-;-;-;59;0,0;0,0
+    # BGE;-;-;-;843;0,5;-
+    # ÖDP;-;-;-;297;0,2;-
+    # Die PARTEI;-;-;-;2.091;1,2;-
+    # EB: Krüger-Winands;755;0,4;-;-;-;-
+    # Tierschutzpartei;-;-;-;-;-;-0,9
+    # PIRATEN;-;-;-2,1;-;-;-2,0
+    # Übrige;-;-;-;-;-;-0,5
+
+    #           Erststimmen                 Zweitstimmen
+    #     Anzahl    %   Diff zu 2013
+    # CDU;68.102 ; 40,0; -2,5        ; 58.307       ;34,2   ;-4,0
+
+    data      = []
+    hasDirect = {}
+    hasSecond = {}
+    iCol      = { "Wk.-Nr." : 0 } # List of party names + at least one entry for "Gültige" (Stimmen)
+    header    = [ "Wk.-Nr." ]
+
+    for iKreis in range(1,300):
+      with open( fname + str(iKreis) + ".csv", newline='' ) as csvfile:
+        spamreader = csv.reader( csvfile, delimiter=';' )
+
+        datum = np.zeros( 200 )
+        datum[ iCol["Wk.-Nr."] ] = iKreis
+
+        for row in spamreader:
+            if len( row ) < 1:
+                continue
+            if len(row[0]) >= 1 and row[0][0] == '#':
+                continue
+
+            # first in row is name
+            if not row[0] in iCol:
+                iCol[ row[0] ] = len( iCol )
+                header += [ row[0] ]
+
+            # now save absolute value
+            if row[1] == '-':
+                datum[ iCol[ row[0] ] ] = 0
+            else:
+                datum[ iCol[ row[0] ] ] = int( row[1].replace('.','') )
+
+        data += [ datum ]
+
+    print( header[:10] )
+    print( data[33][:10] )
+    #print( "SPD", data[33][ iCol['SPD'] ] )
+    #exit()
+
+    data = np.array( data )[:,:len(iCol)]
+    #for row in data:
+    #    print( row[ iCol["Gültige"] ] )
+
+    for x in iCol:
+        # ToDo: also read in secondary vote
+        hasDirect[x] = False
+        hasSecond[x] = True
+    iCol["Gültige"] -= 1
+
+    return data, iCol, hasDirect, hasSecond
+
+
+
+
+def main():
+        #data, iCol, hasDirect, hasSecond = readCSV( 'btwkr17_umrechnung_btw13.csv' )
+        data, iCol, hasDirect, hasSecond = readCrawled( './2017/' )
 
         parties = [ 'CDU', 'SPD', 'FDP', 'DIE LINKE', 'GRÜNE', 'AfD' ]
         colors = {
@@ -252,7 +343,7 @@ def main():
                 #print( row[ iCol['Gültige']+0 ], np.sum( np.array( [ int(x) for x in row[ iCol['Gültige']+0+2::2 ] ] ) ) )
                 #print( row[ iCol['Gültige']+1 ], np.sum( np.array( [ int(x) for x in row[ iCol['Gültige']+1+2::2 ] ] ) ) )
 
-            print( party,"Results:", 100*res1[33], 100*res2[33] )
+            print( party,"Results: Direktstimme:", 100*res1[33], "%, Zweitstimme:", 100*res2[33], "%" )
 
             # find color levels and plot distribution of percentages
             ax  = figParties      .add_subplot( 3, 2, 1+iParty, title = party, ylabel = "%", xlabel = "Wahlbezirk" )
@@ -268,7 +359,7 @@ def main():
             with open( "kreise." + party + ".svg", 'w' ) as cssFile:
                 for iKreis in range( len( res2 ) ):
                     iLevel = np.searchsorted( levels, res2[ iKreis ] ) - 1
-                    print( res2[iKreis], iLevel )
+                    #print( res2[iKreis], iLevel )
                     cssFile.write( ".kreis" + str( iKreis+1 ) + " { fill: #" + colors[ party ][iLevel] + "; }" )
 
         finishPlot( figParties, fname = "parties" )
