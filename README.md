@@ -13,6 +13,9 @@ Und ein weiterer Plot, wo die Prozente sortiert sind. Es ist also wie eine Platz
 
 ## Räumliche Verteilung
 
+### Übersicht
+![Übersicht](/btw-small.png)
+
 ### CDU/CSU
 ![CDU/CSU](/btw-CDU.png)
 
