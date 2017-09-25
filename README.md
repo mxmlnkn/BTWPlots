@@ -4,11 +4,16 @@ Ein Skript, was die Karte von [Wikipedia](https://de.wikipedia.org/wiki/Datei:Bu
 
 # 2017
 
+Ich übernehme keine Verantwortung für Korrektheit der Daten. Es ist nicht sonderlich getestet worden und damit höchstwahrscheinlich zumidnest teilweise fehlerhaft
+
 ## Verteilung der Ergebnisse
 
 Ein direkter Plot der Prozente über die Wahlkreisnummer:
+
 ![Parties](/Results/2017/parties.png)
+
 Und ein weiterer Plot, wo die Prozente sortiert sind. Es ist also wie eine Platzierungsliste zu betrachten, gibt aber interessante Einblicke in die Verteilung der Ergebnisse. Z.B. sieht man bei der Linken einen Sprung von 10% auf 20%. Das heißt es gibt eine Gruppe von Wahlbezirken die signifikant höher liegt als die restlichen. Interessant ist auch dass die Verteilung für die CDU beinahe enie perfekte um 90° rotierte Sigmoidkurve ist.
+
 ![result distributions](/Results/2017/parties-distributions.png)
 
 ## Räumliche Verteilung
@@ -43,8 +48,11 @@ Und ein weiterer Plot, wo die Prozente sortiert sind. Es ist also wie eine Platz
 ## Verteilung der Ergebnisse
 
 Aus Interesse wurde die Verteilung der Prozente visualisiert. Ein direkter Plot der Prozente über die Wahlkreisnummer:
+
 ![Parties](/Results/2013/parties.png)
+
 Und ein weiterer Plot, wo die Prozente sortiert sind. Es ist also wie eine Platzierungsliste zu betrachten, gibt aber interessante Einblicke in die Verteilung der Ergebnisse. Z.B. sieht man bei der Linken einen Sprung von 10% auf 20%. Das heißt es gibt eine Gruppe von Wahlbezirken die signifikant höher liegt als die restlichen. Interessant ist auch dass die Verteilung für die CDU beinahe enie perfekte um 90° rotierte Sigmoidkurve ist.
+
 ![result distributions](/Results/2013/parties-distributions.png)
 
 ## Räumliche Verteilung
