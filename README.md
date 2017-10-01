@@ -4,8 +4,8 @@ Ein Skript, was die Karte von [Wikipedia](https://de.wikipedia.org/wiki/Datei:Bu
 
 Oben 2017, unten 2013. Von links nach Rechts: AfD, CDU, Die Linken, FDP, Grüne, SPD (alphabetisch).
 
-![Übersicht 2013](/Results/2013/btw-small.png)
 ![Übersicht 2017](/Results/2017/btw-small.png)
+![Übersicht 2013](/Results/2013/btw-small.png)
 
 Leider muss man beachten, dass durch den natural-break Algorithmus die Prozentintervalle zu den Farben zwischen 2013 und 2017 nicht gleich sind. Ich habe keine Lust das zu beheben.
 
